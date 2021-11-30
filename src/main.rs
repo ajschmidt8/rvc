@@ -57,7 +57,7 @@ fn ucx_to_rapids(ucx_version_number: usize) -> String {
         .floor()
         + initial_major_version as f64;
 
-    let mut minor_version = ((version_difference * 2) + 6) % number_of_months;
+    let mut minor_version = ((version_difference * 2) + initial_minor_version) % number_of_months;
 
     match minor_version {
         0 => minor_version = 12,

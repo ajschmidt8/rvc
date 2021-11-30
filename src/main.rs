@@ -11,11 +11,13 @@ use std::env;
 22.02 | 0.24 | 4
 */
 
+// Print usage info if no arguments are provided.
+
 fn main() -> Result<(), &'static str> {
     let args = env::args();
     let args_count = args.len();
     if args_count != 2 {
-        return Err("Please provide only a single argument.");
+        return Err("Please provide a single argument.");
     }
     let args_list: Vec<String> = args.collect();
     let input_version = &args_list[1];
@@ -33,7 +35,7 @@ fn main() -> Result<(), &'static str> {
     let output_version = {
         match major_version {
             0 => ucx_to_rapids(minor_version),
-            21.. => String::from("this is RAPIDS version"),
+            21.. => rapids_to_ucx(major_version, minor_version),
             _ => return Err("Major version should be 0 or >=21"),
         }
     };
@@ -43,7 +45,8 @@ fn main() -> Result<(), &'static str> {
 }
 
 fn ucx_to_rapids(ucx_version_number: usize) -> String {
-    let version_difference = ucx_version_number - 20;
+    let ucx_py_offset = 20;
+    let version_difference = ucx_version_number - ucx_py_offset;
     // check that version difference is not negative
     let number_of_months = 12;
     let initial_major_version = 21;
@@ -61,6 +64,20 @@ fn ucx_to_rapids(ucx_version_number: usize) -> String {
         n => minor_version = n,
     }
 
-    // println!("inside function: {}.{:02}", major_version, minor_version);
     format!("{}.{:02}", major_version, minor_version)
+}
+
+fn rapids_to_ucx(major_version: usize, minor_version: usize) -> String {
+    // add some checks for major/minor version limits?
+    // add checks for odd numbers (i.e. 21.05)
+    let ucx_py_offset = 20;
+    let number_of_months = 12;
+    let initial_major_version = 21;
+    let initial_minor_version = 6;
+    let major_difference = major_version - initial_major_version;
+
+    let ucx_version =
+        (((number_of_months * major_difference) + minor_version - initial_minor_version) / 2)
+            + ucx_py_offset;
+    format!("0.{}", ucx_version)
 }
